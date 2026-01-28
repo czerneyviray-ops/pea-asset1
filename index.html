@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบเบิกจ่ายอุปกรณ์ | PEA S.1</title>
+    <title>ระบบเบิกจ่ายเรียลไทม์ | PEA Asset Cloud</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     
     <style>
@@ -17,36 +18,28 @@
         body { font-family: 'Kanit', sans-serif; background: #f8f9fa; color: #333; }
         .hidden { display: none !important; }
 
-        /* Custom UI Elements */
+        /* Custom UI */
         .btn-purple { background: var(--p-main); color: white; border-radius: 12px; }
         .btn-purple:hover { background: var(--p-dark); color: white; }
         .glass-card { background: white; border: none; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
         .pea-logo-text { color: var(--p-main); text-shadow: 2px 2px 0px rgba(0,0,0,0.1); }
         
-        /* Google Login Mockup Style */
-        .btn-google { background: white; color: #333; border: 1px solid #ddd; border-radius: 50px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 10px 20px; font-weight: 500; transition: all 0.2s; }
-        .btn-google:hover { background: #f8f9fa; border-color: #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        /* Login UI */
         .google-page-bg { background: #fff; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: 'Roboto', sans-serif; }
         .google-login-card { width: 450px; padding: 48px 40px 36px; border: 1px solid #dadce0; border-radius: 8px; background: #fff; text-align: center; }
         @media (max-width: 500px) { .google-login-card { border: none; width: 100%; padding: 20px; } }
         .g-logo { width: 75px; margin-bottom: 10px; }
         .g-input { width: 100%; padding: 13px 15px; border: 1px solid #dadce0; border-radius: 4px; font-size: 16px; margin-top: 10px; margin-bottom: 5px; }
-        .g-input:focus { border: 2px solid #1a73e8; outline: none; }
         .g-btn-next { background-color: #1a73e8; color: white; border: none; border-radius: 4px; padding: 8px 24px; font-weight: 500; float: right; margin-top: 30px; }
-        .g-link { color: #1a73e8; text-decoration: none; font-weight: 500; font-size: 14px; cursor: pointer; }
-        .g-email-chip { border: 1px solid #dadce0; border-radius: 16px; padding: 5px 10px; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
-
-        /* Inventory Items */
-        .item-card { cursor: pointer; transition: all 0.2s; border: 1px solid #eee; border-radius: 16px; background: white; }
+        .btn-google { background: white; color: #333; border: 1px solid #ddd; border-radius: 50px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 10px 20px; font-weight: 500; }
+        
+        /* Items Grid */
+        .item-card { cursor: pointer; transition: all 0.2s; border: 1px solid #eee; border-radius: 16px; background: white; position: relative; }
         .item-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(114, 14, 158, 0.1); border-color: var(--p-main); }
         .item-card.overdue { border: 2px solid #dc3545; background: #fff8f8; }
         
-        /* Borrower Card Details */
-        .borrower-card { background: #fff3cd; border: 1px dashed #ffc107; border-radius: 15px; padding: 15px; }
-        .borrower-card.overdue { background: #ffe6e6; border: 1px dashed #dc3545; }
+        /* Avatar */
         .avatar-circle { width: 40px; height: 40px; background: var(--p-main); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-        
-        optgroup { font-weight: bold; color: var(--p-main); background: #f9f9f9; }
     </style>
 </head>
 <body>
@@ -57,12 +50,12 @@
                 <i class="bi bi-lightning-charge-fill" style="font-size: 3.5rem; color: var(--p-main);"></i>
             </div>
             <h4 class="fw-bold mb-0 pea-logo-text">การไฟฟ้าส่วนภูมิภาค</h4>
-            <h5 class="fw-bold mb-4 text-secondary">เขต 1 (ภาคใต้) จ.เพชรบุรี</h5>
-            <p class="text-muted small mb-4">ระบบเบิกจ่ายครุภัณฑ์ (PEA Asset)</p>
+            <h5 class="fw-bold mb-4 text-secondary">ระบบจัดการครุภัณฑ์ (Cloud)</h5>
             <button class="btn btn-google w-100 mb-3" onclick="goToGoogleMock()">
                 <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="20" alt="Google">
                 Sign in with Google
             </button>
+            <div id="db-status" class="text-muted small mt-2">Connecting to Firebase...</div>
         </div>
     </div>
 
@@ -70,12 +63,10 @@
         <div class="google-login-card">
             <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" class="g-logo" alt="Google">
             <h4 class="mb-2" style="font-weight:400;">Sign in</h4>
-            <p class="mb-4" style="font-size:16px;">to continue to PEA Asset System</p>
+            <p class="mb-4">to continue to PEA Asset System</p>
             <div style="text-align: left;">
                 <input type="email" id="g-email-input" class="g-input" placeholder="Email or phone">
-                <div class="mt-2"><span class="g-link">Forgot email?</span></div>
-                <div class="mt-5 d-flex justify-content-between align-items-center">
-                    <span class="g-link">Create account</span>
+                <div class="mt-5 d-flex justify-content-end">
                     <button class="g-btn-next" onclick="submitGoogleEmail()">Next</button>
                 </div>
             </div>
@@ -85,19 +76,14 @@
     <div id="page-google-password" class="google-page-bg hidden">
         <div class="google-login-card">
             <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" class="g-logo" alt="Google">
-            <h4 class="mb-2" style="font-weight:400;">Welcome</h4>
-            <div class="my-4" onclick="backToEmail()">
-                <div class="g-email-chip">
-                    <i class="bi bi-person-circle text-secondary"></i>
-                    <span id="g-email-display" class="fw-bold text-dark">user@example.com</span>
-                    <i class="bi bi-chevron-down small text-muted"></i>
-                </div>
+            <h4 class="mb-2">Welcome</h4>
+            <div class="my-4 p-2 border rounded-pill d-inline-flex align-items-center gap-2">
+                <i class="bi bi-person-circle"></i>
+                <span id="g-email-display" class="fw-bold">user@example.com</span>
             </div>
             <div style="text-align: left;">
                 <input type="password" id="g-password-input" class="g-input" placeholder="Enter your password">
-                <div class="mt-2"><span class="g-link">Forgot password?</span></div>
-                <div class="mt-5 d-flex justify-content-between align-items-center">
-                    <span class="g-link"></span>
+                <div class="mt-5 d-flex justify-content-end">
                     <button class="g-btn-next" onclick="submitGooglePassword()">Next</button>
                 </div>
             </div>
@@ -106,116 +92,43 @@
 
     <div id="page-profile" class="container vh-100 d-flex flex-column justify-content-center align-items-center hidden">
         <div class="glass-card p-5" style="max-width: 500px; width: 100%;">
-            <div class="text-center mb-4">
-                <div class="avatar-circle mx-auto mb-2 fs-4" id="profile-avatar-initial" style="width:60px; height:60px; background:#1a73e8;">U</div>
-                <h5 class="fw-bold mb-0">ลงทะเบียนผู้ใช้งานใหม่</h5>
-                <p class="text-muted small" id="profile-email-show">user@example.com</p>
-            </div>
-            
-            <div class="alert alert-info border-0 small text-start">
-                <i class="bi bi-info-circle me-1"></i> กรุณาระบุข้อมูลครั้งแรก (ครั้งต่อไประบบจะจำให้อัตโนมัติ)
-            </div>
-
+            <h5 class="fw-bold text-center mb-4">ลงทะเบียนผู้ใช้งานใหม่</h5>
             <div class="mb-3">
-                <label class="form-label fw-bold small text-purple">ชื่อ-นามสกุล (ภาษาไทย)</label>
-                <input type="text" id="setup-name" class="form-control" placeholder="เช่น นายสมชาย รักดี">
+                <label class="form-label small fw-bold">ชื่อ-นามสกุล</label>
+                <input type="text" id="setup-name" class="form-control" placeholder="นายสมชาย รักดี">
             </div>
-
             <div class="mb-3">
-                <label class="form-label fw-bold small text-purple">เบอร์โทรศัพท์ติดต่อ (มือถือ)</label>
-                <input type="tel" id="setup-phone" class="form-control" placeholder="เช่น 089-123-4567">
-            </div>
-
-            <div class="mb-4">
-                <label class="form-label fw-bold small text-purple">สังกัด / สาขา</label>
-                <select id="setup-branch" class="form-select" style="max-height: 200px;">
-                    <option value="" selected disabled>-- กรุณาเลือกสังกัด --</option>
-                    <optgroup label="สำนักงานเขต กฟต.1 (เพชรบุรี)">
-                        <option value="กฟต.1 - กองอำนวยการ (กอก.)">กฟต.1 - กองอำนวยการ (กอก.)</option>
-                        <option value="กฟต.1 - กองบัญชีและการเงิน (กบง.)">กฟต.1 - กองบัญชีและการเงิน (กบง.)</option>
-                        <option value="กฟต.1 - กองบริหารงานบุคคล (กบค.)">กฟต.1 - กองบริหารงานบุคคล (กบค.)</option>
-                        <option value="กฟต.1 - กองวิศวกรรมและวางแผน (กวผ.)">กฟต.1 - กองวิศวกรรมและวางแผน (กวผ.)</option>
-                        <option value="กฟต.1 - กองปฏิบัติการและบำรุงรักษา (กปบ.)">กฟต.1 - กองปฏิบัติการและบำรุงรักษา (กปบ.)</option>
-                        <option value="กฟต.1 - กองบริการลูกค้า (กบล.)">กฟต.1 - กองบริการลูกค้า (กบล.)</option>
-                        <option value="กฟต.1 - กองก่อสร้าง (กคส.)">กฟต.1 - กองก่อสร้าง (กคส.)</option>
-                    </optgroup>
-                    <optgroup label="📍 จ.เพชรบุรี">
-                        <option value="กฟจ.เพชรบุรี">กฟจ.เพชรบุรี</option>
-                        <option value="กฟอ.ชะอำ">กฟอ.ชะอำ</option>
-                        <option value="กฟอ.ท่ายาง">กฟอ.ท่ายาง</option>
-                        <option value="กฟอ.บ้านลาด">กฟอ.บ้านลาด</option>
-                        <option value="กฟอ.เขาย้อย">กฟอ.เขาย้อย</option>
-                        <option value="กฟอ.บ้านแหลม">กฟอ.บ้านแหลม</option>
-                        <option value="กฟอ.หนองหญ้าปล้อง">กฟอ.หนองหญ้าปล้อง</option>
-                        <option value="กฟอ.แก่งกระจาน">กฟอ.แก่งกระจาน</option>
-                    </optgroup>
-                    <optgroup label="📍 จ.ราชบุรี">
-                        <option value="กฟจ.ราชบุรี">กฟจ.ราชบุรี</option>
-                        <option value="กฟอ.บ้านโป่ง">กฟอ.บ้านโป่ง</option>
-                        <option value="กฟอ.โพธาราม">กฟอ.โพธาราม</option>
-                        <option value="กฟอ.ดำเนินสะดวก">กฟอ.ดำเนินสะดวก</option>
-                        <option value="กฟอ.ปากท่อ">กฟอ.ปากท่อ</option>
-                        <option value="กฟอ.จอมบึง">กฟอ.จอมบึง</option>
-                        <option value="กฟอ.สวนผึ้ง">กฟอ.สวนผึ้ง</option>
-                    </optgroup>
-                    <optgroup label="📍 จ.สมุทรสงคราม">
-                        <option value="กฟจ.สมุทรสงคราม">กฟจ.สมุทรสงคราม</option>
-                        <option value="กฟอ.อัมพวา">กฟอ.อัมพวา</option>
-                        <option value="กฟอ.บางคนที">กฟอ.บางคนที</option>
-                    </optgroup>
-                    <optgroup label="📍 จ.ประจวบคีรีขันธ์">
-                        <option value="กฟจ.ประจวบคีรีขันธ์">กฟจ.ประจวบคีรีขันธ์</option>
-                        <option value="กฟอ.หัวหิน">กฟอ.หัวหิน</option>
-                        <option value="กฟอ.ปราณบุรี">กฟอ.ปราณบุรี</option>
-                        <option value="กฟอ.กุยบุรี">กฟอ.กุยบุรี</option>
-                        <option value="กฟอ.ทับสะแก">กฟอ.ทับสะแก</option>
-                        <option value="กฟอ.บางสะพาน">กฟอ.บางสะพาน</option>
-                    </optgroup>
-                    <optgroup label="📍 จ.ชุมพร">
-                        <option value="กฟจ.ชุมพร">กฟจ.ชุมพร</option>
-                        <option value="กฟอ.หลังสวน">กฟอ.หลังสวน</option>
-                        <option value="กฟอ.ท่าแซะ">กฟอ.ท่าแซะ</option>
-                        <option value="กฟอ.สวี">กฟอ.สวี</option>
-                    </optgroup>
-                    <optgroup label="📍 จ.ระนอง">
-                        <option value="กฟจ.ระนอง">กฟจ.ระนอง</option>
-                        <option value="กฟอ.กระบุรี">กฟอ.กระบุรี</option>
-                        <option value="กฟอ.กะเปอร์">กฟอ.กะเปอร์</option>
-                    </optgroup>
+                <label class="form-label small fw-bold">สังกัด / สาขา</label>
+                <select id="setup-branch" class="form-select">
+                    <option value="กฟต.1 (เพชรบุรี)">กฟต.1 (เพชรบุรี)</option>
+                    <option value="กฟจ.เพชรบุรี">กฟจ.เพชรบุรี</option>
+                    <option value="กฟอ.ชะอำ">กฟอ.ชะอำ</option>
+                    <option value="กฟอ.ท่ายาง">กฟอ.ท่ายาง</option>
+                    <option value="กฟอ.บ้านลาด">กฟอ.บ้านลาด</option>
                 </select>
             </div>
-            <button class="btn btn-purple w-100 py-2 shadow-sm fw-bold" onclick="completeRegistration()">
-                บันทึกและเข้าใช้งาน <i class="bi bi-arrow-right"></i>
-            </button>
+            <button class="btn btn-purple w-100" onclick="completeRegistration()">บันทึกและเข้าใช้งาน</button>
         </div>
     </div>
 
     <div id="page-main" class="hidden">
         <nav class="navbar sticky-top shadow-sm mb-4" style="background: var(--p-dark);">
             <div class="container">
-                <span class="navbar-brand text-white fw-bold">
-                    <i class="bi bi-lightning-fill text-warning me-2"></i>PEA ASSET S.1
-                </span>
-                <div class="d-flex align-items-center text-white gap-2">
-                    <div class="text-end" style="line-height: 1.2;">
-                        <span id="nav-user" class="d-block fw-bold" style="font-size: 0.9rem;">User</span>
-                        <span id="nav-branch" class="d-block text-white-50" style="font-size: 0.75rem; max-width: 150px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">Branch</span>
-                    </div>
-                    <button class="btn btn-sm btn-outline-light rounded-pill px-3 ms-2" onclick="logout()">
-                        <i class="bi bi-power"></i> ออก
-                    </button>
+                <span class="navbar-brand text-white fw-bold">PEA ASSET (Cloud)</span>
+                <div class="text-white text-end">
+                    <div id="nav-user" class="fw-bold small">User</div>
+                    <div id="nav-branch" class="small text-white-50">Branch</div>
                 </div>
+                <button class="btn btn-sm btn-outline-light ms-2 rounded-pill" onclick="logout()">ออก</button>
             </div>
         </nav>
 
         <div class="container pb-5">
             <div class="d-flex gap-2 mb-4">
                 <div class="input-group shadow-sm">
-                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
-                    <input type="text" id="search-box" class="form-control border-start-0 ps-0" placeholder="ค้นหาชื่อ หรือ รหัสทรัพย์สิน..." onkeyup="filterItems()">
-                    <button class="btn btn-outline-secondary border-start-0" type="button" onclick="openScanner()">
-                        <i class="bi bi-qr-code-scan"></i> สแกน
-                    </button>
+                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                    <input type="text" id="search-box" class="form-control border-start-0" placeholder="ค้นหา..." onkeyup="renderGrid()">
+                    <button class="btn btn-outline-secondary" onclick="openScanner()"><i class="bi bi-qr-code-scan"></i></button>
                 </div>
                 <button id="btn-add-item" class="btn btn-purple px-3 shadow-sm hidden" onclick="openAddModal()">
                     <i class="bi bi-plus-lg"></i> เพิ่ม
@@ -224,513 +137,393 @@
 
             <div id="items-grid" class="row g-3 mb-4"></div>
 
-            <div id="asset-detail" class="glass-card p-4 mb-4 hidden border border-2 border-light">
-                <div class="d-flex align-items-center mb-3">
-                    <button class="btn btn-light rounded-circle shadow-sm me-3" onclick="closeAssetDetail()" style="width:45px; height:45px;">
-                        <i class="bi bi-arrow-left fs-5 text-dark"></i>
-                    </button>
-                    <div>
-                        <span class="badge bg-secondary mb-1" id="det-id">ID</span>
-                        <h5 class="fw-bold mb-0 text-truncate" id="det-name" style="color: var(--p-main); max-width: 250px;">Name</h5>
-                    </div>
+            <div id="asset-detail" class="glass-card p-4 mb-4 hidden border border-2 border-light position-fixed bottom-0 start-0 w-100 m-0 rounded-bottom-0 rounded-top-4" style="z-index: 1050; max-height: 80vh; overflow-y: auto;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0 text-purple" id="det-name">Item Name</h5>
+                    <button class="btn-close" onclick="closeAssetDetail()"></button>
                 </div>
-                <hr>
+                <p class="text-muted small mb-3" id="det-id">ID: xxx</p>
                 <div id="status-area"></div>
-                <div class="mt-4 text-end hidden" id="section-admin-tools">
-                    <button class="btn btn-link text-danger text-decoration-none btn-sm" onclick="deleteItem()">
-                        <i class="bi bi-trash"></i> [Admin] ลบรายการนี้
-                    </button>
+                <div id="admin-tools" class="mt-3 pt-3 border-top hidden text-center">
+                    <button class="btn btn-sm text-danger" onclick="deleteItem()">[Admin] ลบรายการนี้</button>
                 </div>
             </div>
-
-            <h6 class="fw-bold text-muted mb-3"><i class="bi bi-clock-history me-2"></i>ประวัติการเบิก-จ่ายล่าสุด</h6>
-            <div id="history-list" class="list-group list-group-flush shadow-sm rounded-4 overflow-hidden bg-white"></div>
+            
+            <h6 class="fw-bold text-muted mt-5">ประวัติการใช้งาน (Real-time)</h6>
+            <div id="history-list" class="list-group shadow-sm"></div>
         </div>
     </div>
 
     <div class="modal fade" id="scannerModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header border-0">
-                    <h5 class="modal-title fw-bold">📷 สแกน QR Code/Barcode</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body text-center p-0">
-                    <div id="reader" style="width: 100%; min-height: 250px; background: #000;"></div>
-                    <p class="text-muted small mt-2 pb-2">ส่องกล้องไปที่รหัสทรัพย์สิน</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="borrowModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 rounded-4">
-                <div class="modal-header border-0">
-                    <h5 class="modal-title fw-bold">📅 กำหนดวันส่งคืน</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="date" id="due-date-input" class="form-control form-control-lg text-center fw-bold" style="color: var(--p-main); background:#f8f9fa;">
-                </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-purple w-100" onclick="confirmBorrow()">ยืนยันการเบิก</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="lateModal" tabindex="-1" data-bs-backdrop="static">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 rounded-4 shadow">
-                <div class="modal-header border-0 bg-danger text-white rounded-top-4">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>แจ้งเตือน: เกินกำหนดคืน</h5>
-                </div>
-                <div class="modal-body pt-4">
-                    <div class="text-center mb-3">
-                        <h2 class="fw-bold text-danger" id="late-days-count">0 วัน</h2>
-                        <p class="text-muted">รายการนี้ส่งคืนล่าช้ากว่ากำหนด</p>
-                    </div>
-                    <label class="form-label fw-bold small text-muted">ระบุสาเหตุ/หมายเหตุ</label>
-                    <textarea id="late-reason" class="form-control" rows="3" placeholder="เช่น ปฏิบัติงานแก้ไขกระแสไฟฟ้าขัดข้องต่อเนื่อง..."></textarea>
-                </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">ยกเลิก</button>
-                    <button type="button" class="btn btn-danger px-4" onclick="confirmLateReturn()">ยืนยันรับคืน</button>
-                </div>
+                <div class="modal-body p-0"><div id="reader"></div></div>
+                <button class="btn btn-light w-100 rounded-0 rounded-bottom" data-bs-dismiss="modal">ปิด</button>
             </div>
         </div>
     </div>
 
     <div class="modal fade" id="addModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 rounded-4">
-                <div class="modal-header border-0">
-                    <h5 class="modal-title fw-bold" style="color: var(--p-main);">เพิ่มทรัพย์สินใหม่</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title">เพิ่มครุภัณฑ์</h5></div>
                 <div class="modal-body">
-                    <label class="small text-muted">รหัสทรัพย์สิน/Serial No.</label>
-                    <input type="text" id="new-id" class="form-control mb-2" placeholder="เช่น 7450-001-XXXX">
-                    <label class="small text-muted">ชื่อรายการ</label>
-                    <input type="text" id="new-name" class="form-control mb-2" placeholder="ชื่อเรียกอุปกรณ์">
-                    <label class="small text-muted">ประเภท</label>
+                    <input id="new-id" class="form-control mb-2" placeholder="รหัสทรัพย์สิน/Serial No.">
+                    <input id="new-name" class="form-control mb-2" placeholder="ชื่อรายการ">
                     <select id="new-icon" class="form-select">
-                        <option value="bi-broadcast">📻 วิทยุสื่อสาร</option>
-                        <option value="bi-tools">🛠️ เครื่องมือช่าง/Hotline</option>
-                        <option value="bi-laptop">💻 คอมพิวเตอร์/Notebook</option>
-                        <option value="bi-camera">📷 กล้องถ่ายภาพ</option>
-                        <option value="bi-car-front">🚗 ยานพาหนะ</option>
-                        <option value="bi-box-seam">📦 วัสดุสำนักงานทั่วไป</option>
+                        <option value="bi-broadcast">วิทยุสื่อสาร</option>
+                        <option value="bi-laptop">คอมพิวเตอร์</option>
+                        <option value="bi-tools">เครื่องมือช่าง</option>
+                        <option value="bi-car-front">ยานพาหนะ</option>
                     </select>
                 </div>
-                <div class="modal-footer border-0">
-                    <button class="btn btn-purple w-100" onclick="confirmAddItem()">บันทึกเข้าระบบ</button>
-                </div>
+                <div class="modal-footer"><button class="btn btn-purple w-100" onclick="confirmAddItem()">บันทึก</button></div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // ==========================================
-        // 🚨 CONFIG: ADMIN & API
-        // ==========================================
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzp3LsM4zLmd2vJk2CImmgGWZy6lJMoVMEXep-C5C-3E-zu8kFRFyGCRfTs9FYlvowC8A/exec";
+    <div class="modal fade" id="borrowModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title">กำหนดส่งคืน</h5></div>
+                <div class="modal-body">
+                    <input type="date" id="due-date-input" class="form-control text-center fw-bold text-purple">
+                </div>
+                <div class="modal-footer"><button class="btn btn-purple w-100" onclick="confirmBorrow()">ยืนยัน</button></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, update, onValue, push, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // ✅ Config ของคุณ (ผมแกะจากรูปมาใส่ให้แล้ว)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDHBp7xoh9TgIxIkbfv3ZGe-z8isnSJo1Q",
+            authDomain: "pea-asset-realtime.firebaseapp.com",
+            databaseURL: "https://pea-asset-realtime-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "pea-asset-realtime",
+            storageBucket: "pea-asset-realtime.firebasestorage.app",
+            messagingSenderId: "1097630363105",
+            appId: "1:1097630363105:web:08d18ed117a8c9de5bf6a0"
+        };
+
+        // Init Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Expose to window for global access
+        window.db = db;
+        window.dbRef = ref;
+        window.dbSet = set;
+        window.dbUpdate = update;
+        window.dbPush = push;
+        window.dbRemove = remove;
+
+        // --- REALTIME LISTENER ---
+        const statusDiv = document.getElementById('db-status');
         
-        // 🔒 ADMIN LIST: รายชื่ออีเมลที่มีสิทธิ์ เพิ่ม/ลบ ของ
-        const ADMIN_EMAILS = [
-            "admin@pea.co.th",
-            "tewit2547t@gmail.com"
-        ];
-
-        // --- DATA STORAGE ---
-        // ใช้ LocalStorage เพื่อจำลอง Database
-        let items = JSON.parse(localStorage.getItem('pea_items_sec')) || [
-            { id: "RD-001", name: "วิทยุสื่อสาร Motorola (ประจำรถ)", icon: "bi-broadcast", status: "available", borrower: null, due_date: null },
-            { id: "NB-IT-05", name: "Notebook Dell Latitude", icon: "bi-laptop", status: "borrowed", 
-              borrower: { name: "นายสมชาย ช่างไฟ", branch: "กฟอ.ชะอำ", uid: "u1", email: "user@example.com", phone: "081-234-5678" }, due_date: "2023-12-01" }
-        ];
-        let logs = JSON.parse(localStorage.getItem('pea_logs_sec')) || [];
-        let usersDB = JSON.parse(localStorage.getItem('pea_users_sec')) || [];
-        let currentUser = JSON.parse(localStorage.getItem('pea_session_sec'));
-
-        // --- INIT ---
-        window.onload = function() {
-            if(currentUser) {
-                showMainPage();
-            } else {
-                document.getElementById('page-landing').classList.remove('hidden');
-            }
+        // 1. Listen Items
+        onValue(ref(db, 'items'), (snapshot) => {
+            statusDiv.innerText = "🟢 Connected to Cloud";
+            statusDiv.classList.add('text-success');
             
-            // Fix modal camera cleanup event: ปิดกล้องเมื่อปิด Modal
+            const data = snapshot.val();
+            window.allItems = data ? Object.values(data) : [];
+            window.renderGrid();
+            
+            // Refresh Detail View if Open
+            if(window.currentOpenId) {
+                const item = window.allItems.find(i => i.id === window.currentOpenId);
+                if(item) window.renderDetailContent(item);
+                else window.closeAssetDetail(); // Closed if deleted
+            }
+        });
+
+        // 2. Listen Logs
+        onValue(ref(db, 'logs'), (snapshot) => {
+            const data = snapshot.val();
+            const logs = data ? Object.values(data).reverse().slice(0, 20) : [];
+            document.getElementById('history-list').innerHTML = logs.map(l => `
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="fw-bold">${l.item}</span>
+                        <span class="badge ${l.action==='ยืม'?'bg-warning text-dark':'bg-success'} ms-2">${l.action}</span>
+                    </div>
+                    <small class="text-muted text-end" style="font-size:0.75rem">
+                        ${l.user}<br>${l.time}
+                    </small>
+                </div>
+            `).join('');
+        });
+    </script>
+
+    <script>
+        // Global State
+        window.allItems = [];
+        window.currentOpenId = null;
+        const ADMIN_EMAILS = ["admin@pea.co.th", "tewit2547t@gmail.com"];
+        
+        // Check Session
+        let currentUser = JSON.parse(localStorage.getItem('pea_user_v2'));
+        
+        window.onload = function() {
+            if(currentUser) showMain();
+            else document.getElementById('page-landing').classList.remove('hidden');
+            
+            // Fix Camera Modal
             document.getElementById('scannerModal').addEventListener('hidden.bs.modal', () => {
                 if(html5QrcodeScanner) html5QrcodeScanner.clear();
             });
-        }
+        };
 
-        // --- SECURITY CHECK FUNCTION ---
-        function checkAdminPermissions() {
-            if (!currentUser) return;
-            const isAdmin = ADMIN_EMAILS.includes(currentUser.email);
-            
-            // ปุ่มเพิ่ม (หน้าแรก)
-            const addBtn = document.getElementById('btn-add-item');
-            if (isAdmin) addBtn.classList.remove('hidden');
-            else addBtn.classList.add('hidden');
-
-            // ปุ่มลบ (หน้า Detail)
-            const delSec = document.getElementById('section-admin-tools');
-            if (isAdmin) delSec.classList.remove('hidden');
-            else delSec.classList.add('hidden');
-        }
-
-        // --- AUTH FLOW (Google Login Logic) ---
+        // --- AUTH ---
         function goToGoogleMock() {
             document.getElementById('page-landing').classList.add('hidden');
             document.getElementById('page-google-email').classList.remove('hidden');
         }
-
         function submitGoogleEmail() {
             const email = document.getElementById('g-email-input').value.trim();
-            if(!email) return alert("Please enter your email");
-            
+            if(!email) return alert('ระบุอีเมล');
             sessionStorage.setItem('temp_email', email);
             document.getElementById('page-google-email').classList.add('hidden');
             document.getElementById('page-google-password').classList.remove('hidden');
             document.getElementById('g-email-display').innerText = email;
         }
-
-        function backToEmail() {
-            document.getElementById('page-google-password').classList.add('hidden');
-            document.getElementById('page-google-email').classList.remove('hidden');
-        }
-
         function submitGooglePassword() {
-            const pwd = document.getElementById('g-password-input').value;
-            if(!pwd) return alert("Please enter your password");
-            
             const email = sessionStorage.getItem('temp_email');
-            const existingUser = usersDB.find(u => u.email === email);
-
-            if(existingUser) {
-                // User เก่า -> Login เลย
-                currentUser = existingUser;
-                localStorage.setItem('pea_session_sec', JSON.stringify(currentUser));
-                document.getElementById('page-google-password').classList.add('hidden');
-                showMainPage();
+            let users = JSON.parse(localStorage.getItem('pea_users_db')) || [];
+            let found = users.find(u => u.email === email);
+            
+            if(found) {
+                currentUser = found;
+                localStorage.setItem('pea_user_v2', JSON.stringify(currentUser));
+                showMain();
             } else {
-                // User ใหม่ -> ไปหน้าลงทะเบียน
                 document.getElementById('page-google-password').classList.add('hidden');
                 document.getElementById('page-profile').classList.remove('hidden');
-                document.getElementById('profile-email-show').innerText = email;
-                document.getElementById('profile-avatar-initial').innerText = email.charAt(0).toUpperCase();
             }
         }
-
         function completeRegistration() {
-            const name = document.getElementById('setup-name').value.trim();
+            const name = document.getElementById('setup-name').value;
             const branch = document.getElementById('setup-branch').value;
-            const phone = document.getElementById('setup-phone').value.trim();
             const email = sessionStorage.getItem('temp_email');
-
-            if(!name || !branch || !phone) return alert("กรุณากรอกข้อมูลให้ครบถ้วน");
-
-            const newUser = {
-                uid: "u_" + Date.now(),
-                email: email,
-                name: name,
-                branch: branch,
-                phone: phone
-            };
-
-            usersDB.push(newUser);
-            localStorage.setItem('pea_users_sec', JSON.stringify(usersDB));
-            currentUser = newUser;
-            localStorage.setItem('pea_session_sec', JSON.stringify(currentUser));
-
-            document.getElementById('page-profile').classList.add('hidden');
-            showMainPage();
+            
+            if(!name) return alert('ระบุชื่อ');
+            
+            currentUser = { name, branch, email };
+            
+            // Save to Local DB
+            let users = JSON.parse(localStorage.getItem('pea_users_db')) || [];
+            users.push(currentUser);
+            localStorage.setItem('pea_users_db', JSON.stringify(users));
+            localStorage.setItem('pea_user_v2', JSON.stringify(currentUser));
+            
+            showMain();
         }
-
-        function showMainPage() {
+        function logout() {
+            localStorage.removeItem('pea_user_v2');
+            location.reload();
+        }
+        function showMain() {
+            document.querySelectorAll('.google-page-bg, #page-landing, #page-profile').forEach(el => el.classList.add('hidden'));
             document.getElementById('page-main').classList.remove('hidden');
             document.getElementById('nav-user').innerText = currentUser.name;
             document.getElementById('nav-branch').innerText = currentUser.branch;
             
-            checkAdminPermissions();
-            renderItemsGrid();
-            renderHistory();
+            // Check Admin
+            const isAdmin = ADMIN_EMAILS.includes(currentUser.email);
+            if(isAdmin) document.getElementById('btn-add-item').classList.remove('hidden');
         }
 
-        function logout() {
-            localStorage.removeItem('pea_session_sec');
-            location.reload();
-        }
-
-        // --- SCANNER LOGIC (ระบบสแกน QR Code) ---
-        let html5QrcodeScanner = null;
-        function openScanner() {
-            // เปิด Modal ขึ้นมาก่อน
-            const modal = new bootstrap.Modal(document.getElementById('scannerModal'));
-            modal.show();
-
-            // หน่วงเวลาแป๊บนึง เพื่อให้ Modal โหลดเสร็จ แล้วค่อยเปิดกล้อง
-            setTimeout(() => {
-                if (html5QrcodeScanner) html5QrcodeScanner.clear();
-
-                // config สำหรับมือถือ (กล้องหลัง)
-                const config = { 
-                    fps: 10, 
-                    qrbox: { width: 250, height: 250 },
-                    aspectRatio: 1.0,
-                    // บังคับใช้กล้องหลัง (Environment)
-                    videoConstraints: { facingMode: { exact: "environment" } }
-                };
-
-                // พยายามเปิดกล้องหลังก่อน
-                try {
-                    html5QrcodeScanner = new Html5QrcodeScanner("reader", config, false);
-                    html5QrcodeScanner.render(onScanSuccess, (err)=>{ /* Ignore Errors */ });
-                } catch(e) {
-                    // ถ้าพัง (เช่นเปิดบน PC ไม่มีกล้องหลัง) ให้เปิดแบบธรรมดา
-                    html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 }, false);
-                    html5QrcodeScanner.render(onScanSuccess, (err)=>{});
-                }
-            }, 500);
-        }
-
-        function onScanSuccess(decodedText) {
-            // 1. ปิดกล้อง
-            if(html5QrcodeScanner) html5QrcodeScanner.clear();
-            bootstrap.Modal.getInstance(document.getElementById('scannerModal')).hide();
-
-            // 2. นำค่าที่สแกนได้ไปใส่ช่องค้นหา
-            document.getElementById('search-box').value = decodedText;
-            filterItems();
-
-            // 3. ถ้าเจอ ID นี้ในระบบ ให้เปิดหน้า Detail เลย
-            const foundItem = items.find(i => i.id === decodedText);
-            if(foundItem) {
-                selectItem(foundItem.id);
-            } else {
-                alert("สแกนสำเร็จ: " + decodedText + "\n(แต่ไม่พบรหัสนี้ในระบบ)");
-            }
-        }
-
-        // --- API SENDER ---
-        function sendToGoogleSheets(data) {
-            if(!GOOGLE_SCRIPT_URL) return;
-            // ใส่ ' หน้าเบอร์โทร เพื่อป้องกัน Excel มองเป็นตัวเลขแล้วตัด 0 ข้างหน้า
-            if(data.phone) data.phone = "'" + data.phone; 
-            
-            fetch(GOOGLE_SCRIPT_URL, {
-                method: "POST", mode: "no-cors",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
-            }).then(() => console.log("Sent")).catch(console.error);
-        }
-
-        // --- INVENTORY LOGIC ---
-        function getDaysOverdue(dueStr) {
-            if(!dueStr) return 0;
-            const due = new Date(dueStr);
-            const today = new Date();
-            due.setHours(0,0,0,0); today.setHours(0,0,0,0);
-            return Math.ceil((today - due) / (1000 * 60 * 60 * 24));
-        }
-
-        function renderItemsGrid(filter = "") {
+        // --- RENDER ---
+        window.renderGrid = function() {
+            const txt = document.getElementById('search-box').value.toLowerCase();
             const grid = document.getElementById('items-grid');
             grid.innerHTML = "";
-            const filtered = items.filter(i => i.name.toLowerCase().includes(filter.toLowerCase()) || i.id.toLowerCase().includes(filter.toLowerCase()));
-
-            if(filtered.length === 0) { grid.innerHTML = `<div class="col-12 text-center text-muted">ไม่พบข้อมูล</div>`; return; }
+            
+            const filtered = window.allItems.filter(i => i.name.toLowerCase().includes(txt) || i.id.toLowerCase().includes(txt));
+            
+            if(filtered.length === 0) {
+                grid.innerHTML = `<div class="col-12 text-center text-muted py-5">ไม่พบข้อมูล หรือยังไม่มีข้อมูลในระบบ</div>`;
+                return;
+            }
 
             filtered.forEach(item => {
-                const daysLate = (item.status === 'borrowed') ? getDaysOverdue(item.due_date) : 0;
-                const isLate = daysLate > 0;
-                let badge = item.status === 'available' 
-                    ? `<span class="badge bg-success position-absolute top-0 end-0 m-2">ว่าง</span>`
-                    : (isLate ? `<span class="badge bg-danger position-absolute top-0 end-0 m-2">เกิน ${daysLate} วัน</span>` : `<span class="badge bg-warning text-dark position-absolute top-0 end-0 m-2">ถูกเบิก</span>`);
+                // Calculate Overdue
+                let isLate = false;
+                let lateDays = 0;
+                if(item.status === 'borrowed' && item.due_date) {
+                    const due = new Date(item.due_date);
+                    const today = new Date();
+                    due.setHours(0,0,0,0); today.setHours(0,0,0,0);
+                    if(today > due) {
+                        isLate = true;
+                        lateDays = Math.ceil((today - due) / (1000*60*60*24));
+                    }
+                }
 
                 grid.innerHTML += `
                 <div class="col-12 col-md-6 col-lg-4">
-                    <div class="item-card p-3 d-flex align-items-center position-relative h-100 ${isLate ? 'overdue' : ''}" onclick="selectItem('${item.id}')">
-                        <div class="rounded-3 bg-light d-flex align-items-center justify-content-center me-3" style="width:60px; height:60px;">
-                            <i class="bi ${item.icon} fs-2" style="color: var(--p-main)"></i>
+                    <div class="item-card p-3 d-flex align-items-center ${isLate ? 'overdue' : ''}" onclick="openDetail('${item.id}')">
+                        <div class="rounded-3 bg-light d-flex align-items-center justify-content-center me-3" style="width:50px; height:50px;">
+                            <i class="bi ${item.icon || 'bi-box-seam'} fs-3 text-purple"></i>
                         </div>
-                        <div style="flex:1; overflow:hidden;">
-                            <h6 class="fw-bold mb-1 text-truncate">${item.name}</h6>
-                            <small class="text-muted d-block">${item.id}</small>
-                            ${isLate ? `<small class="text-danger fw-bold"><i class="bi bi-exclamation-circle"></i> ล่าช้า ${daysLate} วัน</small>` : ''}
+                        <div style="flex:1;">
+                            <h6 class="fw-bold mb-0 text-truncate">${item.name}</h6>
+                            <small class="text-muted">${item.id}</small>
+                            ${isLate ? `<div class="text-danger small fw-bold">เกินกำหนด ${lateDays} วัน</div>` : ''}
                         </div>
-                        ${badge}
+                        ${item.status === 'available' 
+                            ? '<span class="badge bg-success">ว่าง</span>' 
+                            : '<span class="badge bg-warning text-dark">ถูกยืม</span>'}
                     </div>
                 </div>`;
             });
-        }
-        function filterItems() { renderItemsGrid(document.getElementById('search-box').value); }
+        };
 
-        let selectedItemId = null;
-        function selectItem(id) {
-            selectedItemId = id;
-            const item = items.find(i => i.id === id);
+        window.openDetail = function(id) {
+            window.currentOpenId = id;
+            const item = window.allItems.find(i => i.id === id);
+            if(!item) return;
             
             document.getElementById('asset-detail').classList.remove('hidden');
-            document.getElementById('asset-detail').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            window.renderDetailContent(item);
+        };
+
+        window.renderDetailContent = function(item) {
             document.getElementById('det-name').innerText = item.name;
             document.getElementById('det-id').innerText = item.id;
             
-            checkAdminPermissions();
+            const isAdmin = ADMIN_EMAILS.includes(currentUser.email);
+            if(isAdmin) document.getElementById('admin-tools').classList.remove('hidden');
+            else document.getElementById('admin-tools').classList.add('hidden');
 
             const area = document.getElementById('status-area');
             if(item.status === 'available') {
                 area.innerHTML = `
-                    <div class="alert alert-success border-0 bg-success-subtle text-success d-flex align-items-center">
-                        <i class="bi bi-check-circle-fill fs-4 me-3"></i><div><strong>สถานะ: พร้อมเบิกใช้งาน</strong></div>
+                    <div class="alert alert-success border-0 bg-success-subtle text-success">
+                        <i class="bi bi-check-circle-fill me-2"></i> สถานะ: พร้อมเบิก
                     </div>
                     <button class="btn btn-purple w-100 py-2" onclick="openBorrowModal()">ทำรายการเบิก</button>
                 `;
             } else {
-                const daysLate = getDaysOverdue(item.due_date);
-                const isLate = daysLate > 0;
-                const isMe = (item.borrower.email === currentUser.email);
-                const isAdmin = ADMIN_EMAILS.includes(currentUser.email);
-
+                const b = item.borrower || {};
                 area.innerHTML = `
-                    <div class="borrower-card mb-3 ${isLate ? 'overdue' : ''}">
-                        <div class="${isLate ? 'text-danger' : 'text-warning-emphasis'} fw-bold mb-2">
-                            ${isLate ? `<i class="bi bi-fire me-2"></i>เกินกำหนด ${daysLate} วัน!` : '<i class="bi bi-info-circle me-2"></i>กำลังถูกใช้งาน'}
-                        </div>
-                        <div class="d-flex align-items-center bg-white p-3 rounded-3 shadow-sm mb-2">
-                            <div class="avatar-circle me-3">${item.borrower.name.charAt(0)}</div>
-                            <div style="flex:1;">
-                                <div class="fw-bold text-dark">${item.borrower.name}</div>
-                                <div class="text-muted small">${item.borrower.branch}</div>
-                                <div class="text-muted small"><i class="bi bi-telephone"></i> <a href="tel:${item.borrower.phone}" class="text-decoration-none">${item.borrower.phone}</a></div>
-                            </div>
-                        </div>
-                        <div class="d-flex justify-content-between px-2">
-                            <small class="text-muted">กำหนดส่งคืน</small>
-                            <span class="fw-bold ${isLate?'text-danger':'text-dark'}">${formatDate(item.due_date)}</span>
-                        </div>
+                    <div class="p-3 bg-warning-subtle rounded-3 mb-3 border border-warning">
+                        <strong>ผู้ยืม:</strong> ${b.name}<br>
+                        <strong>สังกัด:</strong> ${b.branch}<br>
+                        <strong>กำหนดคืน:</strong> ${item.due_date}
                     </div>
-                    ${(isMe || isAdmin) ? `<button class="btn btn-danger w-100 py-2" onclick="checkReturnProcess()">แจ้งคืนครุภัณฑ์</button>` 
-                           : `<button class="btn btn-secondary w-100" disabled>ไม่สามารถเบิกซ้อนได้</button>`}
+                    <button class="btn btn-outline-danger w-100" onclick="doReturn()">แจ้งรับคืนของ</button>
                 `;
             }
-        }
+        };
 
-        // --- ACTIONS ---
-        function openBorrowModal() {
-            document.getElementById('due-date-input').min = new Date().toISOString().split('T')[0];
-            document.getElementById('due-date-input').value = "";
-            new bootstrap.Modal(document.getElementById('borrowModal')).show();
-        }
+        window.closeAssetDetail = function() {
+            document.getElementById('asset-detail').classList.add('hidden');
+            window.currentOpenId = null;
+        };
 
-        function confirmBorrow() {
-            const dateVal = document.getElementById('due-date-input').value;
-            if(!dateVal) return alert("กรุณาระบุวันส่งคืน");
-            const item = items.find(i => i.id === selectedItemId);
-            
-            item.status = 'borrowed';
-            item.due_date = dateVal;
-            item.borrower = { name: currentUser.name, branch: currentUser.branch, uid: currentUser.uid, email: currentUser.email, phone: currentUser.phone };
-
-            saveLog(item.name, 'borrow', dateVal);
-            saveData();
-            sendToGoogleSheets({ action: 'ยืม', itemName: item.name, itemId: item.id, userName: currentUser.name, branch: currentUser.branch, email: currentUser.email, phone: currentUser.phone, dueDate: dateVal, note: '-' });
-
-            bootstrap.Modal.getInstance(document.getElementById('borrowModal')).hide();
-            selectItem(selectedItemId);
-            renderItemsGrid();
-        }
-
-        function checkReturnProcess() {
-            const item = items.find(i => i.id === selectedItemId);
-            if (getDaysOverdue(item.due_date) > 0) {
-                document.getElementById('late-days-count').innerText = `${getDaysOverdue(item.due_date)} วัน`;
-                document.getElementById('late-reason').value = "";
-                new bootstrap.Modal(document.getElementById('lateModal')).show();
-            } else {
-                if(confirm("ยืนยันการรับคืนครุภัณฑ์?")) processReturnNormal();
-            }
-        }
-
-        function confirmLateReturn() {
-            const reason = document.getElementById('late-reason').value.trim();
-            if(!reason) return alert("ระบุสาเหตุ");
-            const item = items.find(i => i.id === selectedItemId);
-            const days = getDaysOverdue(item.due_date);
-            
-            saveLog(item.name, 'return_late', null, `ช้า ${days} วัน: ${reason}`);
-            sendToGoogleSheets({ action: 'คืนช้า', itemName: item.name, itemId: item.id, userName: currentUser.name, branch: currentUser.branch, email: currentUser.email, phone: currentUser.phone, dueDate: item.due_date, note: `ช้า ${days} วัน: ${reason}` });
-
-            item.status = 'available'; item.due_date = null; item.borrower = null;
-            saveData();
-            bootstrap.Modal.getInstance(document.getElementById('lateModal')).hide();
-            selectItem(selectedItemId);
-            renderItemsGrid();
-        }
-
-        function processReturnNormal() {
-            const item = items.find(i => i.id === selectedItemId);
-            saveLog(item.name, 'return', null);
-            sendToGoogleSheets({ action: 'คืนปกติ', itemName: item.name, itemId: item.id, userName: currentUser.name, branch: currentUser.branch, email: currentUser.email, phone: currentUser.phone, dueDate: '-', note: 'ตรงเวลา' });
-
-            item.status = 'available'; item.due_date = null; item.borrower = null;
-            saveData();
-            selectItem(selectedItemId);
-            renderItemsGrid();
-        }
-
-        // --- ADMIN ACTIONS ---
-        function openAddModal() {
-            if(!ADMIN_EMAILS.includes(currentUser.email)) return alert("สำหรับ Admin เท่านั้น");
-            document.getElementById('new-id').value = "";
-            document.getElementById('new-name').value = "";
-            new bootstrap.Modal(document.getElementById('addModal')).show(); 
-        }
-
+        // --- ACTIONS (Write to Cloud) ---
+        function openAddModal() { new bootstrap.Modal(document.getElementById('addModal')).show(); }
+        
         function confirmAddItem() {
-            if(!ADMIN_EMAILS.includes(currentUser.email)) return;
             const id = document.getElementById('new-id').value;
             const name = document.getElementById('new-name').value;
             const icon = document.getElementById('new-icon').value;
-            if(!id) return;
-            items.push({ id, name, icon, status: 'available', borrower: null, due_date: null });
-            saveData(); renderItemsGrid();
+            if(!id || !name) return alert('กรอกข้อมูลให้ครบ');
+            
+            // WRITE to Firebase
+            window.dbSet(window.dbRef(window.db, 'items/' + id), {
+                id, name, icon, status: 'available'
+            });
+            
             bootstrap.Modal.getInstance(document.getElementById('addModal')).hide();
         }
 
         function deleteItem() {
-            if(!ADMIN_EMAILS.includes(currentUser.email)) return alert("สำหรับ Admin เท่านั้น");
-            if(confirm("ยืนยันลบรายการทรัพย์สินนี้?")) {
-                items = items.filter(i => i.id !== selectedItemId);
-                document.getElementById('asset-detail').classList.add('hidden');
-                saveData(); renderItemsGrid();
-            }
+            if(!confirm('ยืนยันลบรายการนี้? (กู้คืนไม่ได้)')) return;
+            window.dbRemove(window.dbRef(window.db, 'items/' + window.currentOpenId));
+            window.closeAssetDetail();
         }
 
-        function closeAssetDetail() { document.getElementById('asset-detail').classList.add('hidden'); }
-        function saveLog(itemName, type, date, note = "") {
-            let actionText = type === 'borrow' ? 'เบิก' : (type === 'return_late' ? 'คืนช้า' : 'คืน');
-            let badgeClass = type === 'borrow' ? 'bg-warning text-dark' : (type === 'return_late' ? 'bg-danger' : 'bg-success');
-            logs.unshift({ user: currentUser.name, item: itemName, action: actionText, badge: badgeClass, note: note, timestamp: new Date().toLocaleString('th-TH') });
-            localStorage.setItem('pea_logs_sec', JSON.stringify(logs));
-            renderHistory();
+        function openBorrowModal() { new bootstrap.Modal(document.getElementById('borrowModal')).show(); }
+        
+        function confirmBorrow() {
+            const date = document.getElementById('due-date-input').value;
+            if(!date) return alert('ระบุวันที่');
+            
+            const item = window.allItems.find(i => i.id === window.currentOpenId);
+            
+            // UPDATE Firebase
+            window.dbUpdate(window.dbRef(window.db, 'items/' + item.id), {
+                status: 'borrowed',
+                due_date: date,
+                borrower: {
+                    name: currentUser.name,
+                    branch: currentUser.branch,
+                    email: currentUser.email
+                }
+            });
+            
+            // LOG
+            window.dbPush(window.dbRef(window.db, 'logs'), {
+                item: item.name, action: 'ยืม', user: currentUser.name, time: new Date().toLocaleString('th-TH')
+            });
+            
+            bootstrap.Modal.getInstance(document.getElementById('borrowModal')).hide();
         }
-        function saveData() { localStorage.setItem('pea_items_sec', JSON.stringify(items)); }
-        function renderHistory() {
-            document.getElementById('history-list').innerHTML = logs.map(l => `
-                <div class="list-group-item">
-                    <div class="d-flex justify-content-between"><strong>${l.item}</strong><span class="badge ${l.badge}">${l.action}</span></div>
-                    <small class="text-muted">${l.user} | ${l.timestamp}</small>
-                    ${l.note ? `<div class="text-danger small mt-1">${l.note}</div>` : ''}
-                </div>`).join('');
+
+        function doReturn() {
+            if(!confirm('ยืนยันรับคืนอุปกรณ์?')) return;
+            
+            const item = window.allItems.find(i => i.id === window.currentOpenId);
+            
+            // UPDATE Firebase
+            window.dbUpdate(window.dbRef(window.db, 'items/' + item.id), {
+                status: 'available',
+                due_date: null,
+                borrower: null
+            });
+            
+            // LOG
+            window.dbPush(window.dbRef(window.db, 'logs'), {
+                item: item.name, action: 'คืน', user: currentUser.name, time: new Date().toLocaleString('th-TH')
+            });
         }
-        function formatDate(d) { if(!d) return "-"; return new Date(d).toLocaleDateString('th-TH'); }
+
+        // --- SCANNER ---
+        let html5QrcodeScanner = null;
+        function openScanner() {
+            const modal = new bootstrap.Modal(document.getElementById('scannerModal'));
+            modal.show();
+            setTimeout(() => {
+                if(html5QrcodeScanner) html5QrcodeScanner.clear();
+                const config = { fps: 10, qrbox: 250, videoConstraints: { facingMode: { exact: "environment" } } };
+                
+                try {
+                    html5QrcodeScanner = new Html5QrcodeScanner("reader", config, false);
+                    html5QrcodeScanner.render(onScanSuccess, ()=>{});
+                } catch(e) {
+                    html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 }, false);
+                    html5QrcodeScanner.render(onScanSuccess, ()=>{});
+                }
+            }, 500);
+        }
+        function onScanSuccess(txt) {
+            if(html5QrcodeScanner) html5QrcodeScanner.clear();
+            bootstrap.Modal.getInstance(document.getElementById('scannerModal')).hide();
+            
+            document.getElementById('search-box').value = txt;
+            window.renderGrid();
+            
+            const item = window.allItems.find(i => i.id === txt);
+            if(item) openDetail(item.id);
+            else alert('ไม่พบรหัส: ' + txt);
+        }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
